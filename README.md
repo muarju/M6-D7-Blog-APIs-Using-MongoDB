@@ -33,7 +33,7 @@ Blog posts should contain following information:
 
 The persistence must be granted via MongoDB
 
-Deply on HeroKu: 
+## Deply on HeroKu: 
 - GET https://striveblogmongodb.herokuapp.com/blogPosts 
 (returns the list of blogPosts)
 
