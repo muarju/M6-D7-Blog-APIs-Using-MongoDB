@@ -56,7 +56,7 @@ authorsRouter.post("/login", async(req,res,next) => {
     );
      // check account found and verify password
     if (!data || !bcrypt.compareSync(password, data.password)) {
-      res.status(200).send("authentication failed");
+      res.status(400).send("authentication failed");
     } else {
       // authentication successful
       res.send(data);
@@ -66,7 +66,24 @@ authorsRouter.post("/login", async(req,res,next) => {
     next(error)
   }
 })
-
+authorsRouter.post("/emailExist", async(req,res,next) => {
+  try {
+    const {email}=req.body;
+    const data = await authorModel.findOne(
+      { "email": email.toLowerCase() },
+    );
+     // check account found and verify password
+    if (!data) {
+      res.status(200).send("noEmail");
+    } else {
+      // authentication successful
+      res.send(data);
+    }
+    
+  } catch (error) {
+    next(error)
+  }
+})
 
 authorsRouter.put("/:authorId", async(req,res,next) => {
   try {

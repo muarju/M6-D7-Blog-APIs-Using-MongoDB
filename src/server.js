@@ -4,12 +4,14 @@ import mongoose from 'mongoose'
 import blogsRouter from "./services/blogs/index.js"
 import authorsRouter from "./services/authors/index.js"
 import {badRequestErrorHandler, catchAllErrorHandler, notFoundErrorHandler} from './errorHandlers.js'
+import cors from "cors";
 
 const server = express()
 
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3001 || 3000
 
 // ******************** MIDDLEWARES ******************
+server.use(cors());
 
 server.use(express.json())
 
