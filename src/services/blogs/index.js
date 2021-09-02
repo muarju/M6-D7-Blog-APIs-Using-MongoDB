@@ -26,7 +26,7 @@ blogsRouter.post("/:blogId/comments", async(req,res,next) => {
         runValidators: true
       }
     )
-    res.status(200).send(addComment)
+    res.status(201).send(addComment)
   } catch (error) {
     res.status(500)
     console.log(error)
@@ -103,7 +103,7 @@ blogsRouter.put("/:blogId", async(req,res,next) => {
     })
 
     if(modifiedBlog){
-      res.send(modifiedBlog)
+      res.status(202).send(modifiedBlog)
     } else {
       next(createError(404, `User with id ${blogId} not found!`))
     }
@@ -111,6 +111,30 @@ blogsRouter.put("/:blogId", async(req,res,next) => {
     next(error)
   }
 })
+blogsRouter.put("/:blogId/comments/:commentId", async(req,res,next) => {
+  try {
+    const { blogId, commentId } = req.params
+
+    const updatedComment = await BlogModel.findOneAndUpdate(
+      { "_id": blogId, "Comments._id" : commentId },
+      {
+        $set: {
+          "Comments.$": { 
+            "_id": commentId,
+            ...req.body
+          },
+        },    
+      },
+      {new: true}
+      )
+    res.status(202).send(updatedComment)
+  } catch (error) {
+    res.status(500)
+    console.log(error)
+    next(error)
+  }
+})
+
 blogsRouter.delete("/:blogId", async(req,res,next) => {
   try {
     const blogId = req.params.blogId
