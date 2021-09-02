@@ -5,6 +5,33 @@ import authorModel from './schema.js'
 
 const authorsRouter = express.Router()
 
+authorsRouter.get("/", async(req,res,next) => {
+  try {
+    const authors = await authorModel.find({})
+    res.send(authors)
+    
+  } catch (error) {
+    next(error)
+  }
+})
+
+authorsRouter.get("/:authorId", async(req,res,next) => {
+  try {
+
+    const authorId = req.params.authorId
+    const authors = await authorModel.findById(authorId) // similar to findOne()
+
+    if(authors){
+      res.send(authors)
+    } else {
+      next(createError(404, `Author with id ${authorId} not found!`))
+    }
+    
+  } catch (error) {
+    next(error)
+  }
+})
+
 authorsRouter.post("/", async(req,res,next) => {
   try {
     const password= req.body.password
@@ -40,33 +67,6 @@ authorsRouter.post("/login", async(req,res,next) => {
   }
 })
 
-authorsRouter.get("/", async(req,res,next) => {
-  try {
-    const authors = await authorModel.find({})
-    res.send(authors)
-    
-  } catch (error) {
-    next(error)
-  }
-})
-
-
-authorsRouter.get("/:authorId", async(req,res,next) => {
-  try {
-
-    const authorId = req.params.authorId
-    const authors = await authorModel.findById(authorId) // similar to findOne()
-
-    if(authors){
-      res.send(authors)
-    } else {
-      next(createError(404, `Author with id ${authorId} not found!`))
-    }
-    
-  } catch (error) {
-    next(error)
-  }
-})
 
 authorsRouter.put("/:authorId", async(req,res,next) => {
   try {
