@@ -175,4 +175,30 @@ blogsRouter.delete("/:blogId/comments/:commentId", async(req,res,next) => {
   }
 })
 
+
+blogsRouter.get("/:blogPostId/like/:userId", async(req,res,next) => {
+  try {
+    const {blogPostId, userId} = req.params
+    const isLiked = await BlogModel.find( { likes: userId } )
+    let response
+    if (isLiked.length === 0 ){
+       response = await BlogModel.findByIdAndUpdate(blogPostId, {$push : {
+        likes: userId
+      }}, {new: true})
+      
+    } else {
+      response = await BlogModel.findByIdAndUpdate(blogPostId, {$pull : {
+        likes: userId
+      }}, {new: true})
+
+    }
+
+    res.send({totalLikes: response.likes.length, currentUserLike: response.likes.includes(userId)? true: false})
+
+  } catch (error) {
+    res.status(500)
+    console.log(error)
+    next(error)
+  }
+})
 export default blogsRouter
