@@ -151,5 +151,28 @@ blogsRouter.delete("/:blogId", async(req,res,next) => {
   }
 })
 
+blogsRouter.delete("/:blogId/comments/:commentId", async(req,res,next) => {
+  try {
+    const { blogId, commentId } = req.params
+
+    const blog = await BlogModel.findByIdAndUpdate(
+      blogId,
+      {
+        $pull: {
+          Comments: { _id: commentId },
+        },
+      },
+      {
+        new: true,
+      }
+    )
+    res.status(200).send(blog)
+
+  } catch (error) {
+    res.status(500)
+    console.log(error)
+    next(error)
+  }
+})
 
 export default blogsRouter
