@@ -70,3 +70,28 @@ from postman need to send update key: value
 ```
 
 - DELETE https://striveblogmongodb.herokuapp.com/blogPosts/<:blogId> delete the blogPost with the given id
+
+# D8 - Embedding documents
+### add a comment to an article.
+Mongo's preferred data design should be to embed comments into blog posts if possible, therefore you should implement the following endpoints
+
+- GET /blogPosts/:id/comments => returns all the comments for the specified blog post
+- GET /blogPosts/:id/comments/:commentId=> returns a single comment for the specified blog post
+- POST /blogPosts/:id => adds a new comment for the specified blog post
+- PUT /blogPosts/:id/comment/:commentId => edit the comment belonging to the specified blog post
+- DELETE /blogPosts/:id/comment/:commentId=> delete the comment belonging to the specified blog post
+
+# D9 Embedding vs Referencing
+### Create Author CRUD
+Today I am going to create author CRUD. So, author can login our system and can create new blog post. 
+
+- GET /authors/ => returns all the authors
+- GET /authors/:id => returns a single Author 
+- POST /authors/ => adds a new author
+- POST /authors/login => return author data if given email and password matches
+- PUT /authors/:id/ => update for 
+- DELETE /authors/:id/comment/:commentId=> delete the comment belonging to the specified blog post
+
+
+### Blog Post Like Option API
+- GET /blogPosts/:blogPostId/like/:userId => will add user id if not exist and will return total Like for a single post
