@@ -17,6 +17,22 @@ blogsRouter.post("/", async(req,res,next) => {
     next(error)
   }
 })
+blogsRouter.post("/:blogId/comments", async(req,res,next) => {
+  try {
+    const addComment = await BlogModel.findByIdAndUpdate(
+      req.params.blogId,
+      { $push: { Comments: req.body } },
+      { new: true,
+        runValidators: true
+      }
+    )
+    res.status(200).send(addComment)
+  } catch (error) {
+    res.status(500)
+    console.log(error)
+    next(error)
+  }
+})
 
 blogsRouter.get("/", async(req,res,next) => {
   try {
@@ -45,6 +61,34 @@ blogsRouter.get("/:blogId", async(req,res,next) => {
     }
     
   } catch (error) {
+    next(error)
+  }
+})
+blogsRouter.get("/:blogId/comments/:commentId", async(req,res,next) => {
+  try {
+    const { blogId, commentId } = req.params
+    const comment = await BlogModel.findOne(
+      { "Comments._id": commentId },
+      {
+        "Comments.$": 1,
+        "_id": 0 //suppress blogID
+      }
+    )
+    res.status(200).send(comment)
+  } catch (error) {
+    res.status(500)
+    console.log(error)
+    next(error)
+  }
+})
+blogsRouter.get("/:blogId/comments/", async(req,res,next) => {
+  try {
+
+    const blogs = await BlogModel.findById(req.params.blogId)
+    res.status(200).send(blogs.Comments)
+
+  } catch (error) {
+    res.status(500)
     next(error)
   }
 })
