@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/nclBaz/strive-m6-d7-may21#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "express": "^4.17.1",
     "express-list-endpoints": "^6.0.0",
     "http-errors": "^1.8.0",
