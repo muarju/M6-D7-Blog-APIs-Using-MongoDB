@@ -1,14 +1,26 @@
 import express from 'express'
 import createError from 'http-errors'
-
 import BlogModel from './schema.js'
+import multer from 'multer';
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary} from 'cloudinary'
+
+export const cloudinaryStorageMedia = new CloudinaryStorage({
+  cloudinary,
+  params:{
+      folder: "Blog-images",
+  },
+})
+
 
 const blogsRouter = express.Router()
 
-blogsRouter.post("/", async(req,res,next) => {
+blogsRouter.post("/",multer({ storage: cloudinaryStorageMedia }).single("cover"), async(req,res,next) => {
   try {
-
-    const newBlog = new BlogModel(req.body) // here happens validation of the req.body, if it's not ok mongoose will throw a "ValidationError"
+    if(req.file.path===""){
+      req.file.path="https://res.cloudinary.com/djm1hfijq/image/upload/v1630601514/Blog-images/No_image_3x4.svg_lozryx.png"
+    }
+    const newBlog = new BlogModel({...req.body, cover: req.file.path}) // here happens validation of the req.body, if it's not ok mongoose will throw a "ValidationError"
     const {_id} = await newBlog.save()
 
     res.status(201).send({_id})
