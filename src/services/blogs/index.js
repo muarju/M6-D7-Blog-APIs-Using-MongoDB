@@ -4,6 +4,7 @@ import BlogModel from './schema.js'
 import multer from 'multer';
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary} from 'cloudinary'
+import authJwt from '../../tools/authJwt.js'
 
 export const cloudinaryStorageMedia = new CloudinaryStorage({
   cloudinary,
@@ -15,12 +16,29 @@ export const cloudinaryStorageMedia = new CloudinaryStorage({
 
 const blogsRouter = express.Router()
 
-blogsRouter.post("/",multer({ storage: cloudinaryStorageMedia }).single("cover"), async(req,res,next) => {
+blogsRouter.put("/coverUpdate/:postId",multer({ storage: cloudinaryStorageMedia }).single("cover"), async(req,res,next) => {
   try {
-    if(req.file.path===""){
-      req.file.path="https://res.cloudinary.com/djm1hfijq/image/upload/v1630601514/Blog-images/No_image_3x4.svg_lozryx.png"
-    }
-    const newBlog = new BlogModel({...req.body, cover: req.file.path}) // here happens validation of the req.body, if it's not ok mongoose will throw a "ValidationError"
+   const blogId = req.params.postId
+   if(req.file.path===""){
+    req.file.path="https://res.cloudinary.com/djm1hfijq/image/upload/v1630601514/Blog-images/No_image_3x4.svg_lozryx.png"
+  }
+   const modifiedBlog = await BlogModel.findByIdAndUpdate(blogId,{
+    ...req.body,
+    cover: req.file.path
+   }, {
+    new: true // returns the modified blog
+  })
+
+    res.status(201).send({modifiedBlog})
+    
+  } catch (error) {
+    next(error)
+  }
+})
+
+blogsRouter.post("/",[authJwt.verifyToken], async(req,res,next) => {
+  try {
+    const newBlog = new BlogModel(req.body) 
     const {_id} = await newBlog.save()
 
     res.status(201).send({_id})
@@ -29,7 +47,8 @@ blogsRouter.post("/",multer({ storage: cloudinaryStorageMedia }).single("cover")
     next(error)
   }
 })
-blogsRouter.post("/:blogId/comments", async(req,res,next) => {
+
+blogsRouter.post("/:blogId/comments",[authJwt.verifyToken], async(req,res,next) => {
   try {
     const addComment = await BlogModel.findByIdAndUpdate(
       req.params.blogId,
@@ -49,7 +68,7 @@ blogsRouter.post("/:blogId/comments", async(req,res,next) => {
 blogsRouter.get("/", async(req,res,next) => {
   try {
     
-    const blogPosts = await BlogModel.find({})
+    const blogPosts = await BlogModel.find({}).populate('author')
 
     res.send(blogPosts)
     
@@ -62,7 +81,7 @@ blogsRouter.get("/:blogId", async(req,res,next) => {
 
     const blogId = req.params.blogId
 
-    const blogPosts = await BlogModel.findById(blogId) // similar to findOne()
+    const blogPosts = await BlogModel.findById(blogId).populate('author') // similar to findOne()
 
     if(blogPosts){
 
@@ -76,6 +95,26 @@ blogsRouter.get("/:blogId", async(req,res,next) => {
     next(error)
   }
 })
+blogsRouter.get("/me/:authorId", async(req,res,next) => {
+  try {
+
+    const authorId = req.params.authorId
+
+    const blogPosts = await BlogModel.find({ "author": authorId }) // similar to findOne()
+
+    if(blogPosts){
+
+      res.send(blogPosts)
+
+    } else {
+      next(createError(404, `Blog with id ${blogId} not found!`))
+    }
+    
+  } catch (error) {
+    next(error)
+  }
+})
+
 blogsRouter.get("/:blogId/comments/:commentId", async(req,res,next) => {
   try {
     const { blogId, commentId } = req.params
@@ -106,7 +145,7 @@ blogsRouter.get("/:blogId/comments/", async(req,res,next) => {
 })
 
 
-blogsRouter.put("/:blogId", async(req,res,next) => {
+blogsRouter.put("/:blogId",[authJwt.verifyToken], async(req,res,next) => {
   try {
     const blogId = req.params.blogId
 
@@ -123,7 +162,7 @@ blogsRouter.put("/:blogId", async(req,res,next) => {
     next(error)
   }
 })
-blogsRouter.put("/:blogId/comments/:commentId", async(req,res,next) => {
+blogsRouter.put("/:blogId/comments/:commentId",[authJwt.verifyToken], async(req,res,next) => {
   try {
     const { blogId, commentId } = req.params
 
@@ -147,7 +186,7 @@ blogsRouter.put("/:blogId/comments/:commentId", async(req,res,next) => {
   }
 })
 
-blogsRouter.delete("/:blogId", async(req,res,next) => {
+blogsRouter.delete("/:blogId",[authJwt.verifyToken], async(req,res,next) => {
   try {
     const blogId = req.params.blogId
 
@@ -163,7 +202,7 @@ blogsRouter.delete("/:blogId", async(req,res,next) => {
   }
 })
 
-blogsRouter.delete("/:blogId/comments/:commentId", async(req,res,next) => {
+blogsRouter.delete("/:blogId/comments/:commentId",[authJwt.verifyToken], async(req,res,next) => {
   try {
     const { blogId, commentId } = req.params
 
@@ -188,7 +227,7 @@ blogsRouter.delete("/:blogId/comments/:commentId", async(req,res,next) => {
 })
 
 
-blogsRouter.get("/:blogPostId/like/:userId", async(req,res,next) => {
+blogsRouter.get("/:blogPostId/like/:userId",[authJwt.verifyToken], async(req,res,next) => {
   try {
     const {blogPostId, userId} = req.params
     const isLiked = await BlogModel.find( { likes: userId } )
