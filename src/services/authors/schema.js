@@ -6,6 +6,7 @@ const authorSchema = new Schema({
     name: {type:String, required: true},
     email: {type:String, required: true, match: /.+\@.+\..+/, unique: true},
     password: {type:String, required: true},
+    role: {type:Number, required: true}, //1-ADMIN, 2-AUTHORS
     avatar: {type:String, required: true},
     }, {
         timestamps: true
