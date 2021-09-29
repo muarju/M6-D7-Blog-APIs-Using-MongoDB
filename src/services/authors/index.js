@@ -2,6 +2,7 @@ import express from 'express'
 import createError from 'http-errors'
 import bcrypt from 'bcryptjs'
 import authorModel from './schema.js'
+import jwt from 'jsonwebtoken'
 
 const authorsRouter = express.Router()
 
@@ -58,26 +59,15 @@ authorsRouter.post("/login", async(req,res,next) => {
     if (!data || !bcrypt.compareSync(password, data.password)) {
       res.status(400).send("authentication failed");
     } else {
-      // authentication successful
-      res.send(data);
-    }
-    
-  } catch (error) {
-    next(error)
-  }
-})
-authorsRouter.post("/emailExist", async(req,res,next) => {
-  try {
-    const {email}=req.body;
-    const data = await authorModel.findOne(
-      { "email": email.toLowerCase() },
-    );
-     // check account found and verify password
-    if (!data) {
-      res.status(200).send("noEmail");
-    } else {
-      // authentication successful
-      res.send(data);
+      var token = jwt.sign({ 
+        id: data._id,
+        name: data.name,
+        avatar:data.avatar,
+        role:data.role }, process.env.JWT_SECRET, {
+        expiresIn: '1 week'
+      });
+      
+      res.send(token);
     }
     
   } catch (error) {
@@ -88,8 +78,13 @@ authorsRouter.post("/emailExist", async(req,res,next) => {
 authorsRouter.put("/:authorId", async(req,res,next) => {
   try {
     const authorId = req.params.authorId
+    const password= req.body.password
+    const passwordHash = bcrypt.hashSync(password, 10);
 
-    const modifiedAuthor = await authorModel.findByIdAndUpdate(authorId, req.body, {
+    const modifiedAuthor = await authorModel.findByIdAndUpdate(authorId, {
+      ...req.body,
+      password: passwordHash
+    }, {
       new: true // returns the modified blog
     })
 
