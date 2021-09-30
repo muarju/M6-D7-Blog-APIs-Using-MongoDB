@@ -3,6 +3,7 @@ import createError from 'http-errors'
 import bcrypt from 'bcryptjs'
 import authorModel from './schema.js'
 import jwt from 'jsonwebtoken'
+import passport from "passport"
 
 const authorsRouter = express.Router()
 
@@ -15,6 +16,29 @@ authorsRouter.get("/", async(req,res,next) => {
     next(error)
   }
 })
+
+//routes for google logins
+authorsRouter.get("/googleLogin", passport.authenticate("google", { scope: ["profile", "email"] }))
+
+authorsRouter.get("/googleRedirect", passport.authenticate("google"), async (req, res, next) => {
+  try {
+    console.log("redirect")
+    console.log(req.user)
+    res.cookie("token", req.user.token, {
+      httpOnly: true,
+    })
+    res.redirect(`http://localhost:3000`)
+  } catch (error) {
+    next(error)
+  }
+})
+
+
+
+
+
+
+
 
 authorsRouter.get("/:authorId", async(req,res,next) => {
   try {
@@ -59,7 +83,7 @@ authorsRouter.post("/login", async(req,res,next) => {
     if (!data || !bcrypt.compareSync(password, data.password)) {
       res.status(400).send("authentication failed");
     } else {
-      var token = jwt.sign({ 
+      const token = jwt.sign({ 
         id: data._id,
         name: data.name,
         avatar:data.avatar,
