@@ -25,7 +25,7 @@ authorsRouter.get("/googleRedirect", passport.authenticate("google"), async (req
     console.log("redirect")
     console.log(req.user)
     res.cookie("token", req.user.token, {
-      httpOnly: true,
+      //httpOnly: true,
     })
     res.redirect(`http://localhost:3000`)
   } catch (error) {
@@ -60,13 +60,17 @@ authorsRouter.get("/:authorId", async(req,res,next) => {
 authorsRouter.post("/", async(req,res,next) => {
   try {
     const password= req.body.password
-    const passwordHash = bcrypt.hashSync(password, 10);
-    const email= req.body.email
+    if(password){
+      const passwordHash = bcrypt.hashSync(password, 10);
+      const email= req.body.email
 
-    const newAuthor = new authorModel({...req.body,email: email.toLowerCase(), password: passwordHash}) // here happens validation of the req.body, if it's not ok mongoose will throw a "ValidationError"
-    const {_id} = await newAuthor.save()
+      const newAuthor = new authorModel({...req.body,email: email.toLowerCase(), password: passwordHash}) // here happens validation of the req.body, if it's not ok mongoose will throw a "ValidationError"
+      const {_id} = await newAuthor.save()
 
-    res.status(201).send({_id})
+      res.status(201).send({_id})
+    }else{
+      res.status(400).send("Please provide a password!");
+    }
     
   } catch (error) {
     next(error)

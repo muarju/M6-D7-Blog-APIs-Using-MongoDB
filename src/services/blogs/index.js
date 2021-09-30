@@ -100,7 +100,7 @@ blogsRouter.get("/me/:authorId", async(req,res,next) => {
 
     const authorId = req.params.authorId
 
-    const blogPosts = await BlogModel.find({ "author": authorId }) // similar to findOne()
+    const blogPosts = await BlogModel.find({ "author": authorId }).populate('author') // similar to findOne()
 
     if(blogPosts){
 
